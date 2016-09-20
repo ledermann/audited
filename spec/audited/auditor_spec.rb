@@ -424,7 +424,7 @@ describe Audited::Auditor do
         @user.destroy
       }.to change( Audited::Audit.where(:auditable_type => 'Models::ActiveRecord::User', :auditable_id => nil), :count ).by(2)
 
-      expect(@user.audits).to be_empty
+      expect(@user.audits.reload).to be_empty
     end
 
     it "should set the action to 'destroy'" do
