@@ -80,7 +80,7 @@ describe Audited::Audit do
 
     it "undos destroy" do
       user.destroy
-      user.audits.last.undo
+      Audited::Audit.last.undo
       user = Models::ActiveRecord::User.find_by(name: "John")
       expect(user.name).to eq("John")
     end

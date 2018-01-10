@@ -441,7 +441,7 @@ describe Audited::Auditor do
 
     it "should store enum value" do
       @user.destroy
-      expect(@user.audits.last.audited_changes["status"]).to eq(0)
+      expect(Audited::Audit.last.audited_changes["status"]).to eq(0)
     end
 
     it "should be able to reconstruct a destroyed record without history" do
@@ -468,7 +468,7 @@ describe Audited::Auditor do
         owner.destroy
       }.to change( Audited::Audit, :count )
 
-      expect(Audited::Audit.last(2).map { |a| a.action }).to eq(['create', 'destroy'])
+      expect(company.audits.map { |a| a.action }).to eq(['create', 'destroy'])
     end
   end
 
@@ -515,7 +515,12 @@ describe Audited::Auditor do
     it "should nullify associated audits on destroy" do
       expect {
         owner.destroy
-      }.to change( Audited::Audit.where(associated_id: nil), :count ).by(1)
+      }.to change(Audited::Audit.where(associated_id: nil), :count).by(2)
+
+      expect(Audited::Audit.where(associated_id: nil).last(2).map(&:auditable_type)).to eq([
+        'Models::ActiveRecord::OwnedCompany',
+        'Models::ActiveRecord::Owner']
+      )
     end
   end
 
@@ -739,7 +744,7 @@ describe Audited::Auditor do
     it "should re-insert destroyed records" do
       user.destroy
       expect {
-        user.revision(1).save!
+        user.revision(:previous).save!
       }.to change( Models::ActiveRecord::User, :count ).by(1)
     end
 
